@@ -656,3 +656,5 @@ docker compose up -d
    - Use dashboard ID: **1860** ("Node Exporter Full")
    - Select Prometheus as the data source
    - Click **Import**
+
+   # Loki Logs id: 13639
