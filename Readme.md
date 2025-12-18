@@ -1,4 +1,43 @@
-# Docker Notes
+# Docker
+
+## Container
+
+A docker container is a lightweight standalone, executable package of software that includes everything needed to run an application.
+
+## Docker Install and Setup in Arch Linux
+
+Use your favourite package manager to install docker:
+
+```sh
+yay docker
+```
+
+Next **enable/start** _docker.service_ or _docker.socket_. Note that **docker.service** starts the service on boot, whereas **docker.socket** starts Docker on first usage which can decrease boot times.
+
+```sh
+sudo systemctl enable --now docker.service
+```
+
+OR
+
+```sh
+sudo systemctl enable --now docker.socket
+```
+
+If we want to be able to run the docker CLI command as a **non-root user**, add our user to the **docker** user group, re-login and restart docker.service.
+
+```sh
+sudo usermod -aG docker <username>
+```
+
+## Common Docker CLI Commands
+
+```sh
+docker run --interactive --tty --rm ubuntu:22.04
+```
+
+Here, `--interactive --tty` or `-it` opens a shell inside a container and attach it. And, `--rm` automatically remove the container when stopped.
+After running the command, now we are inside the shell of ubuntu image.
 
 ## Databases
 
@@ -143,7 +182,7 @@ docker run --rm -v ~/.aws:/root/.aws amazon/aws-cli:2.9.18 s3 ls
 ```sh
 # Bind mount the credentials into the container
 docker run --rm -v ~/.config/gcloud:/root/.config/gcloud gcr.io/google.com/cloudsdktool/google-cloud-cli:415.0.0 gsutil ls
-# Why is the container image so big 😭?! 2.8GB
+# The container image so big 😭?! 2.8GB
 ```
 
 ## Docker Compose file
