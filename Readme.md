@@ -32,12 +32,128 @@ sudo usermod -aG docker <username>
 
 ## Common Docker CLI Commands
 
+### docker run
+
 ```sh
 docker run --interactive --tty --rm ubuntu:22.04
 ```
 
 Here, `--interactive --tty` or `-it` opens a shell inside a container and attach it. And, `--rm` automatically remove the container when stopped.
-After running the command, now we are inside the shell of ubuntu image.
+
+After running the command, now we are inside the shell of ubuntu container.
+
+```sh
+docker run --interactive --tty --name my-ubuntu-container ubuntu:22.04
+```
+
+Here, the `--name` gives the container an identity. It allows us to:
+
+```sh
+docker start my-ubuntu-container
+docker stop my-ubuntu-container
+docker exec -it my-ubuntu-container bash
+```
+
+### docker ps
+
+```sh
+docker ps
+```
+
+This command lists all the **running** container on the device.
+
+```sh
+docker ps -a
+```
+
+This command lists **all** of the container either stopped, exited or running.
+
+### docker start
+
+```sh
+docker start my-ubuntu-container
+```
+
+It restarts the container `my-ubuntu-container`.
+
+### docker attach
+
+```sh
+docker attach my-ubuntu-container
+```
+
+This command attaches the `my-ubuntu-container` to the running shell.
+
+### Create a Custom Image
+
+```sh
+docker build --tag my-personal-ubuntu -<<EOF
+FROM ubuntu:22.04
+RUN apt update && apt install iputils-ping --yes
+EOF
+```
+
+It creates our **custom** version of **ubuntu** image where **ping** command is already **installed**.
+
+Now, for running a container based on our custom image,
+
+```sh
+docker run --it --rm my-personal-ubuntu
+```
+
+### Concepts of Unpersisting Data in Docker
+
+```sh
+docker run -it --rm ubuntu:22.04
+mkdir myData
+echo "Hello from container!" > /myData/hello.txt
+cat myData/hello.txt
+
+exit
+```
+
+Again, we will create a container based on same image as follows:
+
+```sh
+docker run -it --rm ubuntu:22.04
+cat /myData/hello.txt
+
+exit
+```
+
+Here, that file do not exist. It is because of the fact that all the data will be **removed** from the device as soon as container exited.
+
+## Volume Mounts
+
+At first, we will create a volume.
+
+```sh
+docker volume create test-volume
+```
+
+```sh
+docker run -it --rm --mount source=test-volume,destination=/myData/ ubuntu:22.04
+echo "Hello from container!" > /myData/hello.txt
+cat /myData/hello.txt
+exit
+```
+
+Now we will recreate a new container mounting the same voulme,
+
+```sh
+docker run -it --rm --mount source=test-volume,destination=/myData/ ubuntu:22.04
+cat /myData/hello.txt
+```
+
+Here, data **persists** across the **container destruction**. Volume is treated separately. Data persists across the boundary of the container.
+
+```sh
+/var/lib/docker/volumes
+```
+
+Our persisting data lies in the above mentioned directory of the host system.
+
+## Bind Mounts
 
 ## Databases
 
