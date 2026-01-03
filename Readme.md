@@ -123,7 +123,35 @@ exit
 
 Here, that file do not exist. It is because of the fact that all the data will be **removed** from the device as soon as container exited.
 
-## Volume Mounts
+## Filesystem Mounts
+
+### Bind Mount Vs. Volume Mount
+
+**Volume** is a memory kept by Docker, a **bind mount** is memory kept by us.
+
+Use **Bind Mount** when:
+
+- developing locally
+- watching live file changes
+- editing code in real time
+
+Use **Volume Mount** when:
+
+- deploying
+- persisting databases
+- moving across machines
+
+### Bind Mount
+
+```sh
+docker run -it --rm --mount type=bind,source="$(pwd)/myData",destination=/myData ubuntu:22.04
+```
+
+**Bind mounts** can overwrite container files and file permissions come from the host. Path **must exist and be correct**.
+
+Here, updating the data in host **reflects** the updated data in container too.
+
+### Volume Mount
 
 At first, we will create a volume.
 
@@ -153,9 +181,19 @@ Here, data **persists** across the **container destruction**. Volume is treated 
 
 Our persisting data lies in the above mentioned directory of the host system.
 
-## Bind Mounts
-
 ## Databases
+
+#### i. Use Volumes to persist data:
+
+Generally databases will store its data at one or more known paths. We should identify those and mount volumes to those locations in the containers to ensure data persists beyond the container.
+
+#### ii. Use bind mounts for additional config:
+
+Often databases use configuration files to influence runtime behaviour. We can create these files in our host system, and then use a bind mount to place them in correct location within the container to be read upon startup.
+
+#### iii. Set environment variables:
+
+Many databases use environment variables to influence runtime behaviour. (Eg:- setting the admin password)
 
 ### Postgres
 
@@ -300,6 +338,8 @@ docker run --rm -v ~/.aws:/root/.aws amazon/aws-cli:2.9.18 s3 ls
 docker run --rm -v ~/.config/gcloud:/root/.config/gcloud gcr.io/google.com/cloudsdktool/google-cloud-cli:415.0.0 gsutil ls
 # The container image so big 😭?! 2.8GB
 ```
+
+## Dockerfile
 
 ## Docker Compose file
 
@@ -711,7 +751,7 @@ secrets:
 
 ### Directory Structure
 
-Creae a neat home for our monitoring stack:
+Create a neat home for our monitoring stack:
 
 ```sh
 mkdir -p ~/monitoring/{prometheus, grafana}
