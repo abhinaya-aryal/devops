@@ -341,9 +341,145 @@ docker run --rm -v ~/.config/gcloud:/root/.config/gcloud gcr.io/google.com/cloud
 
 ## Dockerfile
 
-## Docker Compose file
+**Dockerfile** is a text document that contains all the commands a user could call on the command line to assemble an image.
+
+- Start with operating system
+- Install language runtime
+- Install application dependencies
+- Setup execution environment
+- Run application
+
+The format of **Dockerfile** is:
+
+```docker
+# Comment
+INSTRUCTION arguments
+```
+
+### .dockerignore
+
+**.dockerignore** is a text file same as **.gitignore** but for docker.
+
+### Example 1: Dockerfile with ubuntu base image installing Node.js
+
+```docker
+FROM ubuntu
+
+RUN apt update
+RUN apt install nodejs npm -y
+
+COPY . .
+
+RUN npm install
+
+CMD ["npm", "run", "dev"]
+```
+
+Now, the command to build an image from this Dockerfile is:
 
 ```sh
+docker build .
+```
+
+To create a image with a tag:
+
+```sh
+docker build -t backend:0
+```
+
+### Example 2: Optimized previous Dockerfile
+
+```docker
+FROM node:24-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV production
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+USER node
+
+COPY --chown=node:node ./src .
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
+```
+
+### Example 3: Dockerfile for golang backend
+
+```docker
+# Stage 1: Build
+FROM golang:1.19-buster as build
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN go build \
+  -ldflags="-linkmode external -extldflags -static" \
+  -tags netgo \
+  -o api-golang
+
+
+# Stage 2: Runtime
+FROM scratch
+
+ENV GIN_MODE release
+
+COPY --from=build /app/api-golang api-golang
+EXPOSE 8080
+
+CMD ["/api-golang"] # binary
+```
+
+### Example 4: Deploy frontend with nginx
+
+```docker
+# Stage 1: Build
+FROM node:24-bullseye as build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+
+# Stage 2: Runtime
+FROM nginx:1.22-alpine
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+COPY --from=build app/dist/ /usr/share/nginx/html
+
+EXPOSE 80
+```
+
+Some of the additional features of Dockerfile are:
+
+- Parser directives
+- ARG
+- LABEL
+- Heredocs syntax
+- Mounting secrets
+- Entrypoint + CMD
+- ADD vs COPY
+- buildx (Multi-architecture images)
+
+## Container Registry
+
+## Docker Compose file
+
+```yml
 # docker-compose.yml
 services:
   client-react-vite:
@@ -361,7 +497,7 @@ services:
   client-react-nginx:
     labels:
       shipyard.primary-route: true
-      shipyard.route: '/'
+      shipyard.route: "/"
     image: client-react-nginx
     build:
       context: ../05-example-web-application/client-react/
@@ -374,7 +510,7 @@ services:
     restart: unless-stopped
   api-node:
     labels:
-      shipyard.route: '/api/node/'
+      shipyard.route: "/api/node/"
       shipyard.route.rewrite: true
     image: api-node
     build:
@@ -393,7 +529,7 @@ services:
     restart: unless-stopped
   api-golang:
     labels:
-      shipyard.route: '/api/golang/'
+      shipyard.route: "/api/golang/"
       shipyard.route.rewrite: true
     image: api-golang
     build:
