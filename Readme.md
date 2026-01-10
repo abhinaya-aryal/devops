@@ -54,6 +54,43 @@ docker stop my-ubuntu-container
 docker exec -it my-ubuntu-container bash
 ```
 
+Various options in **_docker run_** command are:
+
+```sh
+docker run
+
+-d   # run in background and echoes id
+--entrypoint
+--env, -e, --env-file # set environment variables
+--init
+--interactive, -I, --tty, -t, --it # i for standard input and t for tty shell session
+--mount, --volume, -v
+--name # name the container
+--network, --net
+--platform
+--publish, -p  # connect a port from host system to that of container
+--restart
+--rm   # if the container process stops remove it from the container rather than having it in the stopped container
+--cap-add, --cap-drop
+--cgroup-parent
+--cpu-shares
+--cpuset-cpus
+--device-cgroup-rule
+--device-read-bps, --device-read-iops, --device--write-bps, --device-write-iops
+--gpus # Nvidia only (access GPUs with our container)
+--health-cmd, --health-interval, --health-retries, --health-start-period, --health-timeout
+--memory, -m
+--pid, --pids-limit
+--privileged
+--read-only
+--security-opt
+--dockerd, --userns-remap
+```
+
+```sh
+docker run --platform linux/arm64/v8 ubuntu dpkg --print-architecture
+```
+
 ### docker ps
 
 ```sh
@@ -83,6 +120,19 @@ docker attach my-ubuntu-container
 ```
 
 This command attaches the `my-ubuntu-container` to the running shell.
+
+### docker network
+
+```sh
+docker network ls
+```
+
+This command lists different docker network on the system.
+
+```sh
+docker network create my-network   # create a new network
+docker run -d --network my-network ubuntu sleep 99
+```
 
 ### Create a Custom Image
 
@@ -363,6 +413,7 @@ INSTRUCTION arguments
 ### Example 1: Dockerfile with ubuntu base image installing Node.js
 
 ```docker
+# Dockerfile
 FROM ubuntu
 
 RUN apt update
@@ -477,7 +528,64 @@ Some of the additional features of Dockerfile are:
 
 ## Container Registry
 
+**Container Registry** is a repository or collection of repositories used to store and access container images.
+
+We need to **login** to docker hub from CLI:
+
+```sh
+docker login
+```
+
+```sh
+docker build --tag my-scratch-image
+```
+
+```sh
+docker tag my-scratch-image abhinaya/my-scratch-image  # defaults to :latest version
+
+docker push abhinaya/my-scratch-image
+```
+
+For tags with version:
+
+```sh
+docker tag my-scratch-image abhinaya/my-scratch-image:abc-123
+
+docker push abhinaya/my-scratch-image:abc-123
+```
+
 ## Docker Compose file
+
+We can use **_docker compose_** for running container in place of **_docker run_**.
+
+**docker compose** allows us to specify the application configuration in a **_yaml_** file.
+
+```sh
+docker run -d \
+  --name db \
+  -e POSTGRES_PASSWORD=foobarbaz \
+  -v pgdata:/var/lib/postgresql/data \
+  -p 5432:5432 \
+  --restart unless-stopped \
+  postgres:15.1-alpine
+```
+
+#### **is equivalent to**
+
+```yml
+services:
+  db:
+    image: postgres:15.1-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=foobarbaz
+    ports:
+      - 5432:5432
+    restart: unless-stopped
+    volumes:
+      pgdata:
+```
 
 ```yml
 # docker-compose.yml
