@@ -32,6 +32,22 @@ sudo usermod -aG docker <username>
 
 ## Common Docker CLI Commands
 
+### docker help
+
+```sh
+docker --help  # shows available docker commands
+
+docker image --help
+
+docker compose --help
+
+docker network --help
+
+docker volume --help
+
+docker build --help
+```
+
 ### docker run
 
 ```sh
@@ -134,7 +150,33 @@ docker network create my-network   # create a new network
 docker run -d --network my-network ubuntu sleep 99
 ```
 
-### Create a Custom Image
+### docker compose
+
+**_docker compose_** is generally used to **build/run** image using a **_compose.yaml_** file.
+
+```sh
+docker compose up
+```
+
+This is the main command for **launching** our entire application environment. It does the following things:
+
+- It reads **_compose.yaml_** file, builds images if they don't exist, and creates the necessary containers, networks, and volumes.
+- It starts all defined services. If a service's configuration has changed since its last run, **_up_** is smart enough to re-create only that specific container to apply the new settings.
+- By default, it runs in "attached" mode, streaming the logs from all containers to our terminal (use the **_-d_** flag for "detached" background mode).
+
+```sh
+docker compose -f file-name.yaml build
+```
+
+Here, **_-f_** flag is used if we want to use other file than the default one **_(compose.yaml)_**.
+
+```sh
+docker compose stop   # stop the running container
+```
+
+### docker image
+
+## Create a Custom Image
 
 ```sh
 docker build --tag my-personal-ubuntu -<<EOF
@@ -150,6 +192,8 @@ Now, for running a container based on our custom image,
 ```sh
 docker run --it --rm my-personal-ubuntu
 ```
+
+## Filesystem Mounts
 
 ### Concepts of Unpersisting Data in Docker
 
@@ -173,8 +217,6 @@ exit
 
 Here, that file do not exist. It is because of the fact that all the data will be **removed** from the device as soon as container exited.
 
-## Filesystem Mounts
-
 ### Bind Mount Vs. Volume Mount
 
 **Volume** is a memory kept by Docker, a **bind mount** is memory kept by us.
@@ -191,7 +233,7 @@ Use **Volume Mount** when:
 - persisting databases
 - moving across machines
 
-### Bind Mount
+#### Bind Mount
 
 ```sh
 docker run -it --rm --mount type=bind,source="$(pwd)/myData",destination=/myData ubuntu:22.04
@@ -201,7 +243,7 @@ docker run -it --rm --mount type=bind,source="$(pwd)/myData",destination=/myData
 
 Here, updating the data in host **reflects** the updated data in container too.
 
-### Volume Mount
+#### Volume Mount
 
 At first, we will create a volume.
 
@@ -673,7 +715,7 @@ networks:
 
 ## Docker compose for development mode
 
-```sh
+```dockerfile
 # Dockerfile for frontend dev mode
 FROM node:19.4-bullseye AS build
 
@@ -694,7 +736,7 @@ COPY . .
 CMD ["npm", "run", "dev"]
 ```
 
-```sh
+```dockerfile
 # Docker file for both dev and production for backend
 # Pin specific version for stability
 # Use slim for reduced image size
