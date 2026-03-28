@@ -1139,3 +1139,17 @@ docker compose up -d
    - Click **Import**
 
    # Loki Logs id: 13639
+
+### Ollama
+
+`docker stop ollama`
+
+```
+docker start ollama
+docker exec -it ollama ollama rm qwen2.5:3b
+docker exec -it ollama ollama list
+```
+
+Or enter to the container
+
+`docker exec -it ollama sh`
